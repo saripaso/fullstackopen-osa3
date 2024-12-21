@@ -84,15 +84,21 @@ const generateId = () => {
 
 app.post('/api/persons', (request, response) => {
   const body = request.body
-  const isDuplicate = persons.find(person => person.name === body.name)
+  // const isDuplicate = persons.find(person => person.name === body.name)
 
-  if (!body.name || !body.number) {
+  // if (!body.name || !body.number) {
+  //   return response.status(400).json({ // important to call return -> otherwise code would continue and send the note without content
+  //     error: 'name or number missing'
+  //   })
+  // } else if (isDuplicate) {
+  //   return response.status(400).json({ // important to call return -> otherwise code would continue and send the note without content
+  //     error: 'name must be unique'
+  //   })
+  // }
+
+  if (body.name === undefined) {
     return response.status(400).json({ // important to call return -> otherwise code would continue and send the note without content
-      error: 'name or number missing'
-    })
-  } else if (isDuplicate) {
-    return response.status(400).json({ // important to call return -> otherwise code would continue and send the note without content
-      error: 'name must be unique'
+      error: 'name missing'
     })
   }
 
@@ -105,8 +111,8 @@ app.post('/api/persons', (request, response) => {
   // persons = persons.concat(person)
 
   // response.json(person)
-  person.save().then(savedNote => {
-    response.json(savedNote)
+  person.save().then(savedPerson => {
+    response.json(savedPerson)
   })
 })
 
