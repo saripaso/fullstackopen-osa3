@@ -22,23 +22,22 @@ let persons = []
 const now = new Date()
 const timeStamp = now.toUTCString()
 
-let info = `
-    <div>Phonebook has info of ${persons.length} people</div>
-    <p>${timeStamp}</p>
-`
-
 app.get('/', (request, response) => {
   response.send('<h1>Hello World!</h1>')
-})
-
-app.get('/info', (request, response) => {
-  response.send(info)
 })
 
 app.get('/api/persons', (request, response) => {
   Person.find({}).then(persons => {
     response.json(persons)
   })
+})
+
+let info = `
+    <div>Phonebook has info of ${persons.length} people</div>
+    <p>${timeStamp}</p>
+`
+app.get('/info', (request, response) => {
+  response.send(info)
 })
 
 app.get('/api/persons/:id', (request, response, next) => {
