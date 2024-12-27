@@ -23,8 +23,8 @@ app.use(express.static('dist'))
 app.use(express.json())
 app.use(cors())
 
-morgan.token('response-data', function (req, res) {
-  return JSON.stringify(req.body)
+morgan.token('response-data', function (request, response) {
+  return JSON.stringify(request.body)
 })
 
 app.use(morgan(':method :url :status :res[content-length] - :response-time ms :response-data'))
@@ -64,12 +64,6 @@ app.get('/api/persons/:id', (request, response, next) => {
     .catch(error => next(error))
 })
 
-const generateId = () => {
-  const randomNum = Math.floor(Math.random() * 1000000)
-  const idNum = `${randomNum}`
-  return idNum
-}
-
 app.post('/api/persons', (request, response, next) => {
   const body = request.body
 
@@ -96,8 +90,8 @@ app.put('/api/persons/:id', (request, response, next) => {
 
   Person.findByIdAndUpdate(
     request.params.id,
-     { name, number}, 
-     { new: true, runValidators: true, context: 'query' })
+    { name, number },
+    { new: true, runValidators: true, context: 'query' })
     .then(updatedPerson => {
       response.json(updatedPerson)
     })
