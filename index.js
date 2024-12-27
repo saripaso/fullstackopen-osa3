@@ -75,7 +75,7 @@ app.post('/api/persons', (request, response, next) => {
 
   if ((body.name === '' || body.name === undefined) || (body.number === '' || body.number === undefined)) {
     return response.status(400).json({ // important to call return -> otherwise code would continue and send the note without content
-      // error: 'name or number missing'
+      error: 'name or number missing'
     })
   }
 
