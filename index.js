@@ -64,21 +64,17 @@ const generateId = () => {
 app.post('/api/persons', (request, response) => {
   const body = request.body
 
-  if (body.name === (undefined || '') || body.number === (undefined || '')) {
+  if (body.name === undefined || body.number === undefined) {
     return response.status(400).json({ // important to call return -> otherwise code would continue and send the note without content
       error: 'name or number missing'
     })
   }
 
   const person = new Person({
-    // id: generateId(),
     name: body.name,
     number: body.number,
   })
 
-  // persons = persons.concat(person)
-
-  // response.json(person)
   person.save().then(savedPerson => {
     response.json(savedPerson)
   })
