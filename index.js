@@ -17,11 +17,6 @@ morgan.token('response-data', function (req, res) {
 
 app.use(morgan(':method :url :status :res[content-length] - :response-time ms :response-data'))
 
-let persons = []
-
-const now = new Date()
-const timeStamp = now.toUTCString()
-
 app.get('/', (request, response) => {
   response.send('<h1>Hello World!</h1>')
 })
@@ -32,23 +27,23 @@ app.get('/api/persons', (request, response) => {
   })
 })
 
-let info = `
-    <div>Phonebook has info of ${persons.length} people</div>
-    <p>${timeStamp}</p>
-`
 app.get('/info', (request, response) => {
-  response.send(info)
+  Person.countDocuments()
+    .then(personCount => {
+      const now = new Date()
+      const timeStamp = now.toUTCString()
+      const info = `
+      <div>Phonebook has info of ${personCount} people</div>
+      <p>${timeStamp}</p>`
+      response.send(info)
+    })
+    .catch(error => {
+      console.error('Error fetching person count:', error);
+      response.status(500).send('Error fetching person count.');
+    });
 })
 
 app.get('/api/persons/:id', (request, response, next) => {
-  // const id = request.params.id
-  // const person = persons.find(person => person.id === id)
-
-  // if (person) {
-  //   response.json(person)
-  // } else {
-  //   response.status(404).end()
-  // }
   Person.findById(request.params.id)
     .then(person => {
       if (person) {
@@ -68,21 +63,10 @@ const generateId = () => {
 
 app.post('/api/persons', (request, response) => {
   const body = request.body
-  // const isDuplicate = persons.find(person => person.name === body.name)
 
-  // if (!body.name || !body.number) {
-  //   return response.status(400).json({ // important to call return -> otherwise code would continue and send the note without content
-  //     error: 'name or number missing'
-  //   })
-  // } else if (isDuplicate) {
-  //   return response.status(400).json({ // important to call return -> otherwise code would continue and send the note without content
-  //     error: 'name must be unique'
-  //   })
-  // }
-
-  if (body.name === undefined) {
+  if (body.name === (undefined || '') || body.number === (undefined || '')) {
     return response.status(400).json({ // important to call return -> otherwise code would continue and send the note without content
-      error: 'name missing'
+      error: 'name or number missing'
     })
   }
 
