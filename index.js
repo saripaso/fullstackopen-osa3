@@ -64,7 +64,7 @@ const generateId = () => {
 app.post('/api/persons', (request, response) => {
   const body = request.body
 
-  if (body.name === undefined || body.number === undefined) {
+  if ((body.name === '' || body.name === undefined) || (body.number === '' || body.number === undefined)) {
     return response.status(400).json({ // important to call return -> otherwise code would continue and send the note without content
       error: 'name or number missing'
     })
