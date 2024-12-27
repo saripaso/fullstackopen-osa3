@@ -7,6 +7,18 @@ require('dotenv').config()
 
 const Person = require('./models/person')
 
+const errorHandler = (error, request, response, next) => {
+  console.error(error.message)
+
+  if (error.name === 'CastError') {
+    return response.status(400).send({ error: 'malformatted id' })
+  } else if (error.name === 'ValidationError') {
+    return response.status(400).json({ error: error.message })
+  }
+
+  next(error)
+}
+
 app.use(express.static('dist'))
 app.use(express.json())
 app.use(cors())
@@ -27,7 +39,7 @@ app.get('/api/persons', (request, response) => {
   })
 })
 
-app.get('/info', (request, response) => {
+app.get('/info', (request, response, next) => {
   Person.countDocuments()
     .then(personCount => {
       const now = new Date()
@@ -37,10 +49,7 @@ app.get('/info', (request, response) => {
       <p>${timeStamp}</p>`
       response.send(info)
     })
-    .catch(error => {
-      console.error('Error fetching person count:', error);
-      response.status(500).send('Error fetching person count.');
-    });
+    .catch(error => next(error))
 })
 
 app.get('/api/persons/:id', (request, response, next) => {
@@ -61,12 +70,12 @@ const generateId = () => {
   return idNum
 }
 
-app.post('/api/persons', (request, response) => {
+app.post('/api/persons', (request, response, next) => {
   const body = request.body
 
   if ((body.name === '' || body.name === undefined) || (body.number === '' || body.number === undefined)) {
     return response.status(400).json({ // important to call return -> otherwise code would continue and send the note without content
-      error: 'name or number missing'
+      // error: 'name or number missing'
     })
   }
 
@@ -75,20 +84,20 @@ app.post('/api/persons', (request, response) => {
     number: body.number,
   })
 
-  person.save().then(savedPerson => {
-    response.json(savedPerson)
-  })
+  person.save()
+    .then(savedPerson => {
+      response.json(savedPerson)
+    })
+    .catch(error => next(error))
 })
 
 app.put('/api/persons/:id', (request, response, next) => {
-  const body = request.body
+  const { name, number } = request.body
 
-  const person = {
-    name: body.name,
-    number: body.number,
-  }
-
-  Person.findByIdAndUpdate(request.params.id, person, { new: true })
+  Person.findByIdAndUpdate(
+    request.params.id,
+     { name, number}, 
+     { new: true, runValidators: true, context: 'query' })
     .then(updatedPerson => {
       response.json(updatedPerson)
     })
@@ -96,27 +105,12 @@ app.put('/api/persons/:id', (request, response, next) => {
 })
 
 app.delete('/api/persons/:id', (request, response, next) => {
-  //   const id = request.params.id
-  //   persons = persons.filter(person => person.id !== id)
-
-  //   response.status(204).end()
-
   Person.findByIdAndDelete(request.params.id)
     .then(result => {
       response.status(204).end()
     })
     .catch(error => next(error))
 })
-
-const errorHandler = (error, request, response, next) => {
-  console.error(error.message)
-
-  if (error.name === 'CastError') {
-    return response.status(400).send({ error: 'malformatted id' })
-  }
-
-  next(error)
-}
 
 app.use(errorHandler)
 
